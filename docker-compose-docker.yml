@@ -1,0 +1,51 @@
+services:
+  backend:
+    image: "graphql-study/imzz"
+    container_name: "backend"
+    depends_on:
+      mysql-main:
+        condition: service_healthy
+      mysql-shadow:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    networks:
+      - docker-net
+
+  mysql-main:
+    image: "mysql"
+    container_name: "mysql-main"
+    ports:
+      - "3306:3306"
+    volumes:
+      - "/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PW}"
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PW}"
+    networks:
+      - docker-net
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p ${DB_ROOT_PW}']
+
+  mysql-shadow:
+    image: "mysql"
+    container_name: "mysql-shadow"
+    ports:
+      - "3307:3306"
+    volumes:
+      - "/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PW}"
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PW}"
+    networks:
+      - docker-net
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p ${DB_ROOT_PW}']
+      
+
+networks:
+  docker-net:
